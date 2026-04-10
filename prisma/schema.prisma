@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  icon      String
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+  brand          String
+  sku            String      @unique
+  description    String
+  mrp            Float
+  sellingPrice   Float
+  category       Category    @relation(fields: [categoryId], references: [id])
+  categoryId     String
+  specifications String?
+  inStock        Boolean     @default(true)
+  imageUrl       String?
+  quoteItems     QuoteItem[]
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  name        String
+  phone       String
+  company     String?
+  category    String?
+  requirement String
+  address     String?
+  status      String      @default("new")
+  items       QuoteItem[]
+  orders      Order[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quote     Quote   @relation(fields: [quoteId], references: [id])
+  quoteId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  quote         Quote?      @relation(fields: [quoteId], references: [id])
+  quoteId       String?
+  customerName  String
+  customerPhone String
+  company       String?
+  address       String
+  items         OrderItem[]
+  subtotal      Float
+  gst           Float
+  total         Float
+  status        String      @default("confirmed")
+  paymentStatus String      @default("pending")
+  paymentId     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Float
+}

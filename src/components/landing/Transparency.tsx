@@ -4,16 +4,15 @@ import { motion } from "framer-motion";
 import { CheckCircle, Eye, ChevronRight } from "lucide-react";
 
 const lineItems = [
-  { label: "GST", percent: "5%", amount: "₹67" },
-  { label: "Raw Materials", percent: "35%", amount: "₹495" },
-  { label: "Manufacturing", percent: "13%", amount: "₹175" },
-  { label: "Testing & Analysis", percent: "2%", amount: "₹28" },
-  { label: "Warehousing", percent: "12%", amount: "₹170" },
-  { label: "Payment Gateway", percent: "1%", amount: "₹10" },
-  { label: "Fixed Costs", percent: "21%", amount: "₹298" },
+  { label: "Cost of Goods (Landing Price)", percent: "42%", amount: "₹588" },
+  { label: "Employee Benefit Cost", percent: "12%", amount: "₹168" },
+  { label: "Rental & Interest Cost", percent: "8%", amount: "₹112" },
+  { label: "Labour Charges", percent: "10%", amount: "₹140" },
+  { label: "Delivery Charges", percent: "5%", amount: "₹70" },
+  { label: "GST", percent: "13%", amount: "₹182" },
 ];
 
-const profit = { label: "Profit", percent: "11%", amount: "₹156" };
+const profit = { label: "Profit", percent: "10%", amount: "₹139" };
 
 export default function Transparency() {
   return (

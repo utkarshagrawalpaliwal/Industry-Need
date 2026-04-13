@@ -300,6 +300,7 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<QuoteItemRow[]>([emptyRow()]);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const { subtotal, gst, total, totalSavings } = computeTotals(
     items.filter((i) => i.productId)
@@ -350,9 +351,13 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
 
   async function handleSave() {
     const validItems = items.filter((i) => i.productId);
-    if (!name.trim() || !phone.trim() || validItems.length === 0) return;
+    if (!name.trim() || !phone.trim() || validItems.length === 0) {
+      setMessage({ type: "error", text: "Please fill customer name, phone, and add at least one product." });
+      return;
+    }
 
     setSaving(true);
+    setMessage(null);
     try {
       const res = await fetch("/api/quotes", {
         method: "POST",
@@ -376,16 +381,21 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
       });
       if (res.ok) {
         resetForm();
+        setMessage({ type: "success", text: "Quote created successfully!" });
         onCreated();
+      } else {
+        const data = await res.json().catch(() => null);
+        setMessage({ type: "error", text: data?.error ?? `Failed to save quote (${res.status})` });
       }
     } catch (err) {
       if (process.env.NODE_ENV !== "production") console.error("Save quote error:", err);
+      setMessage({ type: "error", text: "Network error. Please try again." });
     } finally {
       setSaving(false);
     }
   }
 
-  const canSave = name.trim() && phone.trim() && items.some((i) => i.productId);
+  const canSave = name.trim().length > 0 && phone.trim().length >= 10 && items.some((i) => i.productId && i.sellingPrice > 0);
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-8">
@@ -560,6 +570,19 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4860b]/30 focus:border-[#d4860b]"
           />
         </div>
+
+        {/* Message */}
+        {message && (
+          <div
+            className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+              message.type === "success"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
         {/* Pricing Summary + Actions */}
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-4 border-t border-gray-100">

@@ -16,25 +16,31 @@ model Category {
   createdAt DateTime  @default(now())
 }
 
+model Settings {
+  id   String @id @default("default")
+  data Json
+}
+
 model Product {
-  id             String      @id @default(cuid())
-  name           String
-  slug           String      @unique
-  brand          String
-  sku            String      @unique
-  description    String
-  landingPrice   Float       @default(0)
-  mrp            Float
-  sellingPrice   Float
-  category       Category    @relation(fields: [categoryId], references: [id])
-  categoryId     String
-  specifications String?
-  inStock        Boolean     @default(true)
-  imageUrl       String?
-  quoteItems     QuoteItem[]
-  orderItems     OrderItem[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  brand           String
+  sku             String      @unique
+  description     String
+  landingPrice    Float       @default(0)
+  mrp             Float
+  sellingPrice    Float
+  pricingOverride Json?
+  category        Category    @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  specifications  String?
+  inStock         Boolean     @default(true)
+  imageUrl        String?
+  quoteItems      QuoteItem[]
+  orderItems      OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model Quote {

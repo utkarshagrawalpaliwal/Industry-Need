@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { slugify } from "@/lib/utils";
 
+const pricingItemSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  percent: z.number().min(0).max(1),
+});
+
 const createProductSchema = z.object({
   name: z.string().min(1),
   brand: z.string().min(1),
@@ -11,6 +17,7 @@ const createProductSchema = z.object({
   landingPrice: z.number().nonnegative(),
   mrp: z.number().positive(),
   sellingPrice: z.number().positive(),
+  pricingOverride: z.array(pricingItemSchema).nullable().optional(),
   categoryId: z.string().min(1),
   specifications: z.string().optional(),
   inStock: z.boolean().optional(),
@@ -42,6 +49,7 @@ export async function POST(request: NextRequest) {
         landingPrice: data.landingPrice,
         mrp: data.mrp,
         sellingPrice: data.sellingPrice,
+        pricingOverride: data.pricingOverride ?? undefined,
         categoryId: data.categoryId,
         specifications: data.specifications,
         inStock: data.inStock ?? true,

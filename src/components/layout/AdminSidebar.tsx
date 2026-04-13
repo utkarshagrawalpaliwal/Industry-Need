@@ -9,6 +9,7 @@ import {
   Package,
   FileText,
   Truck,
+  Settings,
   ArrowLeft,
   Menu,
   X,
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Quotes", href: "/admin/quotes", icon: FileText },
   { label: "Orders", href: "/admin/orders", icon: Truck },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {

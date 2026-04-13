@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
         landingPrice: true,
         mrp: true,
         sellingPrice: true,
+        pricingOverride: true,
       },
       take: 20,
       orderBy: { name: "asc" },

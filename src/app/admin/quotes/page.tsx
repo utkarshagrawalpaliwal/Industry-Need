@@ -18,7 +18,14 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { QUOTE_STATUSES, QuoteStatus } from "@/types";
-import { QUOTE_STATUS_BADGE_CLASSES, BUSINESS_PHONE, PRICING_BREAKDOWN, getBreakdownFromSellingPrice } from "@/lib/constants";
+import {
+  QUOTE_STATUS_BADGE_CLASSES,
+  BUSINESS_PHONE,
+  PRICING_BREAKDOWN,
+  DEFAULT_PRICING_BREAKDOWN,
+  getBreakdownFromSellingPrice,
+  PricingItem,
+} from "@/lib/constants";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,6 +37,7 @@ interface ProductResult {
   landingPrice: number;
   mrp: number;
   sellingPrice: number;
+  pricingOverride: PricingItem[] | null;
 }
 
 interface QuoteItemRow {
@@ -42,6 +50,7 @@ interface QuoteItemRow {
   mrp: number;
   sellingPrice: number;
   quantity: number;
+  pricingOverride: PricingItem[] | null;
 }
 
 interface QuoteItem {
@@ -85,6 +94,7 @@ function emptyRow(): QuoteItemRow {
     mrp: 0,
     sellingPrice: 0,
     quantity: 1,
+    pricingOverride: null,
   };
 }
 
@@ -332,6 +342,7 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
               landingPrice: product.landingPrice,
               mrp: product.mrp,
               sellingPrice: product.sellingPrice,
+              pricingOverride: product.pricingOverride,
             }
           : item
       )
@@ -542,17 +553,15 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
                     className="w-full px-2 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4860b]/30 text-center"
                   />
                 </div>
-                {/* Line total + savings */}
+                {/* Line total + override indicator */}
                 <div className="col-span-6 sm:col-span-1 flex flex-col items-end justify-center">
                   {item.productId && (
                     <>
                       <span className="text-xs font-bold text-[#0a0a0a]">
                         {formatCurrency(item.sellingPrice * item.quantity)}
                       </span>
-                      {item.mrp > item.sellingPrice && (
-                        <span className="text-[10px] text-green-600 font-semibold">
-                          Save {Math.round(((item.mrp - item.sellingPrice) / item.mrp) * 100)}%
-                        </span>
+                      {item.pricingOverride && (
+                        <span className="text-[10px] text-amber-600 font-semibold">Custom %</span>
                       )}
                     </>
                   )}

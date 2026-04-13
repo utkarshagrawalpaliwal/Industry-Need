@@ -13,7 +13,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { calculateTransparentPricing, PRICING_BREAKDOWN } from "@/lib/constants";
+import { calculateTransparentPricing, PRICING_BREAKDOWN, DEFAULT_PRICING_BREAKDOWN, PricingItem } from "@/lib/constants";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,6 +33,7 @@ interface Product {
   landingPrice: number;
   mrp: number;
   sellingPrice: number;
+  pricingOverride: PricingItem[] | null;
   categoryId: string;
   category: Category;
   specifications: string | null;
@@ -62,21 +63,43 @@ function ProductForm({
   const [sellingPrice, setSellingPrice] = useState(product?.sellingPrice ?? 0);
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
   const [inStock, setInStock] = useState(product?.inStock ?? true);
+  const [useOverride, setUseOverride] = useState(!!product?.pricingOverride);
+  const [overrideBreakdown, setOverrideBreakdown] = useState<PricingItem[]>(
+    product?.pricingOverride
+      ? product.pricingOverride
+      : DEFAULT_PRICING_BREAKDOWN.map((b) => ({ ...b }))
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const activeBreakdown = useOverride ? overrideBreakdown : DEFAULT_PRICING_BREAKDOWN;
 
   // Auto-calculate selling price from landing price
   function handleLandingPriceChange(val: number) {
     setLandingPrice(val);
     if (val > 0) {
-      const { sellingPrice: suggested } = calculateTransparentPricing(val);
+      const { sellingPrice: suggested } = calculateTransparentPricing(val, activeBreakdown);
+      setSellingPrice(suggested);
+    }
+  }
+
+  function updateOverridePercent(index: number, value: number) {
+    setOverrideBreakdown((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, percent: value } : item))
+    );
+  }
+
+  // Recalculate selling price when override changes
+  function applyOverride() {
+    if (landingPrice > 0) {
+      const { sellingPrice: suggested } = calculateTransparentPricing(landingPrice, overrideBreakdown);
       setSellingPrice(suggested);
     }
   }
 
   // Show live breakdown
   const breakdown = sellingPrice > 0
-    ? PRICING_BREAKDOWN.map((item) => ({
+    ? activeBreakdown.map((item) => ({
         ...item,
         amount: Math.round(sellingPrice * item.percent),
       }))
@@ -106,6 +129,7 @@ function ProductForm({
           landingPrice,
           mrp: mrp || sellingPrice,
           sellingPrice,
+          pricingOverride: useOverride ? overrideBreakdown : null,
           categoryId,
           inStock,
         }),
@@ -257,11 +281,70 @@ function ProductForm({
             </div>
           </div>
 
+          {/* Override toggle */}
+          <div className="flex items-center gap-3 mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useOverride}
+                onChange={(e) => setUseOverride(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-[#d4860b] focus:ring-[#d4860b]"
+              />
+              <span className="text-sm font-medium text-[#374151]">
+                Override default percentages for this product
+              </span>
+            </label>
+          </div>
+
+          {/* Editable override percentages */}
+          {useOverride && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+              <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-3">
+                Custom Percentages
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {overrideBreakdown.map((item, idx) => (
+                  <div key={item.key}>
+                    <label className="block text-[10px] text-[#6b7280] font-medium mb-1 truncate" title={item.label}>
+                      {item.label}
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={Math.round(item.percent * 100)}
+                        onChange={(e) => updateOverridePercent(idx, (parseInt(e.target.value) || 0) / 100)}
+                        min={0}
+                        max={100}
+                        className="w-full px-2 py-1.5 text-xs text-right border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 font-semibold"
+                      />
+                      <span className="text-xs text-[#6b7280]">%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <span className={`text-xs font-semibold ${
+                  Math.abs(overrideBreakdown.reduce((s, b) => s + b.percent, 0) - 1) < 0.01
+                    ? "text-green-600" : "text-red-600"
+                }`}>
+                  Total: {Math.round(overrideBreakdown.reduce((s, b) => s + b.percent, 0) * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={applyOverride}
+                  className="text-xs font-semibold text-amber-700 hover:text-amber-900 transition-colors"
+                >
+                  Recalculate Price →
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Live Breakdown Preview */}
           {sellingPrice > 0 && (
             <div className="bg-white rounded-lg border border-gray-100 p-4">
               <p className="text-[10px] font-bold text-[#d4860b] uppercase tracking-widest mb-3">
-                Price Breakdown Preview
+                Price Breakdown Preview {useOverride && <span className="text-amber-600">(Custom)</span>}
               </p>
               <div className="space-y-2">
                 {breakdown.map((item) => (

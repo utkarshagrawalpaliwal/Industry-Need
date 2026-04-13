@@ -33,7 +33,13 @@ export const PAYMENT_BADGE_CLASSES: Record<string, string> = {
 // Defines how the selling price is composed. Each value is a fraction of total.
 // Must sum to 1.0. Aligned with the landing page Transparency section.
 
-export const PRICING_BREAKDOWN = [
+export interface PricingItem {
+  key: string;
+  label: string;
+  percent: number;
+}
+
+export const DEFAULT_PRICING_BREAKDOWN: PricingItem[] = [
   { key: "landingPrice", label: "Cost of Goods (Landing Price)", percent: 0.42 },
   { key: "employeeCost", label: "Employee Benefit Cost", percent: 0.12 },
   { key: "rentalCost", label: "Rental & Interest Cost", percent: 0.08 },
@@ -41,16 +47,23 @@ export const PRICING_BREAKDOWN = [
   { key: "deliveryCost", label: "Delivery Charges", percent: 0.05 },
   { key: "gst", label: "GST", percent: 0.13 },
   { key: "profit", label: "Profit", percent: 0.10 },
-] as const;
+];
 
-// Given a landing price, calculate the selling price and full breakdown
-export function calculateTransparentPricing(landingPrice: number) {
-  const costOfGoodsPercent = 0.42;
-  const sellingPrice = Math.round(landingPrice / costOfGoodsPercent);
+// Backward compat alias
+export const PRICING_BREAKDOWN = DEFAULT_PRICING_BREAKDOWN;
+
+// Given a landing price, calculate selling price and breakdown
+// Accepts optional custom breakdown (from settings or per-product override)
+export function calculateTransparentPricing(
+  landingPrice: number,
+  breakdown: PricingItem[] = DEFAULT_PRICING_BREAKDOWN,
+) {
+  const cogPercent = breakdown.find((b) => b.key === "landingPrice")?.percent ?? 0.42;
+  const sellingPrice = Math.round(landingPrice / cogPercent);
 
   return {
     sellingPrice,
-    breakdown: PRICING_BREAKDOWN.map((item) => ({
+    breakdown: breakdown.map((item) => ({
       ...item,
       amount: Math.round(sellingPrice * item.percent),
     })),
@@ -58,8 +71,11 @@ export function calculateTransparentPricing(landingPrice: number) {
 }
 
 // Given a selling price, calculate the breakdown amounts
-export function getBreakdownFromSellingPrice(sellingPrice: number) {
-  return PRICING_BREAKDOWN.map((item) => ({
+export function getBreakdownFromSellingPrice(
+  sellingPrice: number,
+  breakdown: PricingItem[] = DEFAULT_PRICING_BREAKDOWN,
+) {
+  return breakdown.map((item) => ({
     ...item,
     amount: Math.round(sellingPrice * item.percent),
   }));

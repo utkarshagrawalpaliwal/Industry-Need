@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { ORDER_STATUSES, PAYMENT_STATUSES } from "@/types";
 
 const updateOrderSchema = z.object({
-  status: z.enum(["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]).optional(),
-  paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
+  status: z.enum(ORDER_STATUSES).optional(),
+  paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
 });
 
 export async function PATCH(
@@ -40,7 +41,7 @@ export async function PATCH(
 
     return NextResponse.json(order);
   } catch (error) {
-    console.error("PATCH /api/orders/[id] error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("PATCH /api/orders/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -67,7 +68,7 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error) {
-    console.error("GET /api/orders/[id] error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("GET /api/orders/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

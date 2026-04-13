@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateOrderNumber } from "@/lib/utils";
 import { z } from "zod";
 
 const orderItemSchema = z.object({
@@ -16,15 +17,6 @@ const createOrderSchema = z.object({
   quoteId: z.string().optional(),
   company: z.string().optional(),
 });
-
-function generateOrderNumber(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const random = String(Math.floor(Math.random() * 9999) + 1).padStart(4, "0");
-  return `IN-${year}${month}${day}-${random}`;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
-    console.error("POST /api/orders error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("POST /api/orders error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -95,7 +87,7 @@ export async function GET() {
 
     return NextResponse.json(orders);
   } catch (error) {
-    console.error("GET /api/orders error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("GET /api/orders error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

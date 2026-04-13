@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Truck, IndianRupee, Clock, CheckCircle, Package } from "lucide-react";
 import StatsCard from "@/components/admin/StatsCard";
+import { formatCurrency } from "@/lib/utils";
+import { STATUS_BADGE_CLASSES, PAYMENT_BADGE_CLASSES } from "@/lib/constants";
 
 interface OrderItem {
   id: string;
@@ -24,28 +26,6 @@ interface Order {
   items: OrderItem[];
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  confirmed: "bg-blue-100 text-blue-700",
-  packed: "bg-purple-100 text-purple-700",
-  dispatched: "bg-amber-100 text-amber-700",
-  out_for_delivery: "bg-orange-100 text-orange-700",
-  delivered: "bg-green-100 text-green-700",
-  returned: "bg-red-100 text-red-700",
-};
-
-const PAYMENT_BADGE: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  paid: "bg-green-100 text-green-700",
-  refunded: "bg-red-100 text-red-700",
-};
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -57,10 +37,11 @@ export default function AdminDashboard() {
     async function fetchData() {
       try {
         const res = await fetch("/api/orders");
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
         const data = await res.json();
         setOrders(Array.isArray(data) ? data : data.orders ?? []);
       } catch (err) {
-        console.error("Dashboard fetch error:", err);
+        if (process.env.NODE_ENV !== "production") console.error("Dashboard fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -98,7 +79,8 @@ export default function AdminDashboard() {
       const ordersRes = await fetch("/api/orders");
       const ordersData = await ordersRes.json();
       setOrders(Array.isArray(ordersData) ? ordersData : ordersData.orders ?? []);
-    } catch {
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") console.error("Seed error:", err);
       setSeedMsg("Seed failed.");
     } finally {
       setSeeding(false);
@@ -247,7 +229,7 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3">
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded-full capitalize ${
-                          STATUS_BADGE[o.status] ?? "bg-gray-100 text-gray-600"
+                          STATUS_BADGE_CLASSES[o.status] ?? "bg-gray-100 text-gray-600"
                         }`}
                       >
                         {o.status.replace(/_/g, " ")}
@@ -256,7 +238,7 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3">
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded-full capitalize ${
-                          PAYMENT_BADGE[o.paymentStatus] ?? "bg-gray-100 text-gray-600"
+                          PAYMENT_BADGE_CLASSES[o.paymentStatus] ?? "bg-gray-100 text-gray-600"
                         }`}
                       >
                         {o.paymentStatus}

@@ -749,7 +749,7 @@ export async function POST() {
       orders: orderCount,
     });
   } catch (error) {
-    console.error("POST /api/seed error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("POST /api/seed error:", error);
     return NextResponse.json({ error: "Seed failed", details: String(error) }, { status: 500 });
   }
 }

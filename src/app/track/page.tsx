@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { OrderStatus, PaymentStatus } from "@/types";
+import { WHATSAPP_LINK, PHONE_LINK, whatsappLink } from "@/lib/constants";
 
 type OrderItem = {
   id: string;
@@ -363,7 +364,7 @@ function OrderCard({ order, index }: { order: Order; index: number }) {
                   Download Invoice
                 </button>
                 <a
-                  href={`https://wa.me/919999999999?text=Hi!%20I%20have%20a%20query%20about%20order%20${order.orderNumber}`}
+                  href={whatsappLink(`Hi! I have a query about order ${order.orderNumber}`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-[#2c3038] text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
@@ -542,7 +543,7 @@ export default function TrackPage() {
                 {/* CTA buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a
-                    href="https://wa.me/919999999999?text=Hi!%20I%20need%20industrial%20supplies."
+                    href={WHATSAPP_LINK}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#1fb858] transition-colors"
@@ -551,7 +552,7 @@ export default function TrackPage() {
                     WhatsApp Us Now
                   </a>
                   <a
-                    href="tel:+919999999999"
+                    href={PHONE_LINK}
                     className="inline-flex items-center justify-center gap-2 border-2 border-[#0a0a0a] text-[#0a0a0a] font-semibold px-6 py-3 rounded-xl hover:bg-[#0a0a0a] hover:text-white transition-colors"
                   >
                     <Phone size={18} />

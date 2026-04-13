@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { MessageCircle, Phone, Mail, MapPin } from "lucide-react";
-
-const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_PHONE || "919999999999";
+import { BUSINESS_PHONE, BUSINESS_PHONE_DISPLAY, BUSINESS_EMAIL, WHATSAPP_LINK, PHONE_LINK } from "@/lib/constants";
 
 const quickLinks = [
   { label: "Home", href: "/" },
@@ -13,8 +11,6 @@ const quickLinks = [
 ];
 
 export default function Footer() {
-  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi!%20I%20need%20industrial%20supplies.`;
-
   return (
     <footer className="bg-[#0a0a0a] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
@@ -63,20 +59,20 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="tel:+919999999999"
+                  href={PHONE_LINK}
                   className="flex items-start gap-2.5 text-[#6b7280] text-sm hover:text-[#d4860b] transition-colors duration-200"
                 >
                   <Phone size={15} className="mt-0.5 shrink-0" />
-                  +91 99999 99999
+                  {BUSINESS_PHONE_DISPLAY}
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:hello@industryneed.in"
+                  href={`mailto:${BUSINESS_EMAIL}`}
                   className="flex items-start gap-2.5 text-[#6b7280] text-sm hover:text-[#d4860b] transition-colors duration-200"
                 >
                   <Mail size={15} className="mt-0.5 shrink-0" />
-                  hello@industryneed.in
+                  {BUSINESS_EMAIL}
                 </a>
               </li>
               <li>
@@ -87,7 +83,7 @@ export default function Footer() {
               </li>
               <li className="pt-1">
                 <a
-                  href={whatsappHref}
+                  href={WHATSAPP_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#25D366] text-white text-sm font-medium hover:bg-[#1ebe5d] transition-colors duration-200"

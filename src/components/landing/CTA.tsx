@@ -2,9 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MessageCircle, Phone } from "lucide-react";
-
-const WHATSAPP_LINK = "https://wa.me/919999999999?text=Hi!%20I%20need%20industrial%20supplies.";
-const PHONE_LINK = "tel:+919999999999";
+import { WHATSAPP_LINK, PHONE_LINK } from "@/lib/constants";
 
 export default function CTA() {
   return (

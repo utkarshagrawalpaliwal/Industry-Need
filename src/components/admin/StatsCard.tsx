@@ -15,18 +15,17 @@ export default function StatsCard({ title, value, icon, change, trend }: StatsCa
     <div className="bg-white rounded-xl p-6 border border-steel-light/10">
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-3">
-          <p className="text-sm" style={{ color: "#6b7280" }}>
+          <p className="text-sm text-steel-light">
             {title}
           </p>
-          <p className="text-2xl font-bold" style={{ color: "#0a0a0a" }}>
+          <p className="text-2xl font-bold text-ink">
             {value}
           </p>
           {change && trend && (
             <div className="flex items-center gap-1">
               {trend === "up" ? (
                 <svg
-                  className="w-4 h-4"
-                  style={{ color: "#16a34a" }}
+                  className="w-4 h-4 text-green-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -36,8 +35,7 @@ export default function StatsCard({ title, value, icon, change, trend }: StatsCa
                 </svg>
               ) : (
                 <svg
-                  className="w-4 h-4"
-                  style={{ color: "#dc2626" }}
+                  className="w-4 h-4 text-red-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -47,8 +45,7 @@ export default function StatsCard({ title, value, icon, change, trend }: StatsCa
                 </svg>
               )}
               <span
-                className="text-sm font-medium"
-                style={{ color: trend === "up" ? "#16a34a" : "#dc2626" }}
+                className={`text-sm font-medium ${trend === "up" ? "text-green-600" : "text-red-600"}`}
               >
                 {change}
               </span>
@@ -56,8 +53,7 @@ export default function StatsCard({ title, value, icon, change, trend }: StatsCa
           )}
         </div>
         <div
-          className="p-3 rounded-lg flex-shrink-0"
-          style={{ backgroundColor: "rgba(212, 134, 11, 0.1)", color: "#d4860b" }}
+          className="p-3 rounded-lg flex-shrink-0 bg-amber/10 text-amber"
         >
           {icon}
         </div>

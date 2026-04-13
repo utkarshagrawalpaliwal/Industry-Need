@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-
-const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_BUSINESS_PHONE || "919999999999";
+import { WHATSAPP_LINK } from "@/lib/constants";
 
 function WhatsAppIcon({ size = 28 }: { size?: number }) {
   return (
@@ -21,8 +19,6 @@ function WhatsAppIcon({ size = 28 }: { size?: number }) {
 }
 
 export default function WhatsAppFAB() {
-  const whatsappHref = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi!%20I%20need%20industrial%20supplies.`;
-
   return (
     <div className="fixed right-6 bottom-6 z-50 flex items-center justify-center">
       {/* Pulse ring */}
@@ -30,7 +26,7 @@ export default function WhatsAppFAB() {
 
       {/* FAB button */}
       <motion.a
-        href={whatsappHref}
+        href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"

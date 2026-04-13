@@ -11,6 +11,9 @@ import {
   MessageCircle,
   Search,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import { ORDER_STATUSES, PAYMENT_STATUSES, OrderStatus, PaymentStatus } from "@/types";
+import { STATUS_BADGE_CLASSES, PAYMENT_BADGE_CLASSES } from "@/lib/constants";
 
 interface OrderItem {
   id: string;
@@ -35,38 +38,6 @@ interface Order {
   createdAt: string;
 }
 
-const statusFlow = [
-  "confirmed",
-  "packed",
-  "dispatched",
-  "out_for_delivery",
-  "delivered",
-  "returned",
-];
-const paymentOptions = ["pending", "paid", "refunded"];
-
-const statusColors: Record<string, string> = {
-  confirmed: "bg-blue-100 text-blue-700 border-blue-200",
-  packed: "bg-purple-100 text-purple-700 border-purple-200",
-  dispatched: "bg-amber-100 text-amber-700 border-amber-200",
-  out_for_delivery: "bg-orange-100 text-orange-700 border-orange-200",
-  delivered: "bg-green-100 text-green-700 border-green-200",
-  returned: "bg-red-100 text-red-700 border-red-200",
-};
-
-const paymentColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  paid: "bg-green-100 text-green-700 border-green-200",
-  refunded: "bg-red-100 text-red-700 border-red-200",
-};
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 type FilterTab = "all" | "active" | "delivered" | "returned";
 
@@ -80,10 +51,11 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       const res = await fetch("/api/orders");
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : data.orders || []);
-    } catch {
-      console.error("Failed to fetch orders");
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") console.error("Failed to fetch orders:", err);
     } finally {
       setLoading(false);
     }
@@ -95,7 +67,7 @@ export default function AdminOrdersPage() {
 
   const updateOrder = async (
     id: string,
-    updates: { status?: string; paymentStatus?: string }
+    updates: { status?: OrderStatus; paymentStatus?: PaymentStatus }
   ) => {
     try {
       await fetch(`/api/orders/${id}`, {
@@ -104,7 +76,8 @@ export default function AdminOrdersPage() {
         body: JSON.stringify(updates),
       });
       fetchOrders();
-    } catch {
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") console.error("Order update error:", err);
       alert("Failed to update order");
     }
   };
@@ -250,14 +223,14 @@ export default function AdminOrdersPage() {
                       value={order.status}
                       onChange={(e) => {
                         e.stopPropagation();
-                        updateOrder(order.id, { status: e.target.value });
+                        updateOrder(order.id, { status: e.target.value as OrderStatus });
                       }}
                       onClick={(e) => e.stopPropagation()}
                       className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold border cursor-pointer ${
-                        statusColors[order.status] ?? "bg-gray-100"
+                        STATUS_BADGE_CLASSES[order.status] ?? "bg-gray-100"
                       }`}
                     >
-                      {statusFlow.map((s) => (
+                      {ORDER_STATUSES.map((s) => (
                         <option key={s} value={s}>
                           {s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                         </option>
@@ -272,15 +245,15 @@ export default function AdminOrdersPage() {
                       onChange={(e) => {
                         e.stopPropagation();
                         updateOrder(order.id, {
-                          paymentStatus: e.target.value,
+                          paymentStatus: e.target.value as PaymentStatus,
                         });
                       }}
                       onClick={(e) => e.stopPropagation()}
                       className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold border cursor-pointer ${
-                        paymentColors[order.paymentStatus] ?? "bg-gray-100"
+                        PAYMENT_BADGE_CLASSES[order.paymentStatus] ?? "bg-gray-100"
                       }`}
                     >
-                      {paymentOptions.map((p) => (
+                      {PAYMENT_STATUSES.map((p) => (
                         <option key={p} value={p}>
                           {p.charAt(0).toUpperCase() + p.slice(1)}
                         </option>

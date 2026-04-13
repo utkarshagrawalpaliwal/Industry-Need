@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { whatsappLink } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "About IndustryNeed — Fastest Industrial Supply Chain in India",
@@ -135,7 +136,7 @@ export default function AboutPage() {
           verified B2B buyers.
         </p>
         <a
-          href="https://wa.me/919999999999?text=Hi%2C%20I%20want%20to%20become%20a%20supplier%20on%20IndustryNeed"
+          href={whatsappLink("Hi, I want to become a supplier on IndustryNeed")}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-7 py-3 bg-[#25D366] text-white rounded-lg font-semibold text-sm hover:bg-[#1ebe5a] transition-colors"

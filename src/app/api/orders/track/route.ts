@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(orders);
   } catch (error) {
-    console.error("GET /api/orders/track error:", error);
+    if (process.env.NODE_ENV !== "production") console.error("GET /api/orders/track error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -28,3 +28,11 @@ export const PAYMENT_BADGE_CLASSES: Record<string, string> = {
   paid: "bg-green-100 text-green-700 border-green-200",
   refunded: "bg-red-100 text-red-700 border-red-200",
 };
+
+export const QUOTE_STATUS_BADGE_CLASSES: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-600 border-gray-200",
+  sent: "bg-blue-100 text-blue-700 border-blue-200",
+  accepted: "bg-green-100 text-green-700 border-green-200",
+  rejected: "bg-red-100 text-red-700 border-red-200",
+  converted: "bg-purple-100 text-purple-700 border-purple-200",
+};

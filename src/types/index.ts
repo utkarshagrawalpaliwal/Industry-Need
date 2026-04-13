@@ -12,3 +12,13 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const PAYMENT_STATUSES = ["pending", "paid", "refunded"] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+export const QUOTE_STATUSES = [
+  "draft",
+  "sent",
+  "accepted",
+  "rejected",
+  "converted",
+] as const;
+
+export type QuoteStatus = (typeof QUOTE_STATUSES)[number];

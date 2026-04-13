@@ -38,26 +38,34 @@ model Product {
 
 model Quote {
   id          String      @id @default(cuid())
+  quoteNumber String      @unique
   name        String
   phone       String
   company     String?
-  category    String?
-  requirement String
   address     String?
-  status      String      @default("new")
   items       QuoteItem[]
+  subtotal    Float       @default(0)
+  gst         Float       @default(0)
+  total       Float       @default(0)
+  status      String      @default("draft")
+  notes       String?
   orders      Order[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
 
 model QuoteItem {
-  id        String  @id @default(cuid())
-  quote     Quote   @relation(fields: [quoteId], references: [id])
-  quoteId   String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int
+  id           String  @id @default(cuid())
+  quote        Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId      String
+  product      Product @relation(fields: [productId], references: [id])
+  productId    String
+  productName  String
+  brand        String
+  sku          String
+  mrp          Float
+  sellingPrice Float
+  quantity     Int
 }
 
 model Order {

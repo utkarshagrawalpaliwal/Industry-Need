@@ -64,10 +64,14 @@ function ProductForm({
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? "");
   const [inStock, setInStock] = useState(product?.inStock ?? true);
   const [useOverride, setUseOverride] = useState(!!product?.pricingOverride);
+  const [overrideMode, setOverrideMode] = useState<"percent" | "amount">("percent");
   const [overrideBreakdown, setOverrideBreakdown] = useState<PricingItem[]>(
     product?.pricingOverride
       ? product.pricingOverride
       : DEFAULT_PRICING_BREAKDOWN.map((b) => ({ ...b }))
+  );
+  const [overrideAmounts, setOverrideAmounts] = useState<number[]>(
+    DEFAULT_PRICING_BREAKDOWN.map(() => 0)
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -89,9 +93,29 @@ function ProductForm({
     );
   }
 
+  function updateOverrideAmount(index: number, amount: number) {
+    const newAmounts = [...overrideAmounts];
+    newAmounts[index] = amount;
+    setOverrideAmounts(newAmounts);
+    // Back-calculate percentages from amounts
+    const total = newAmounts.reduce((s, a) => s + a, 0);
+    if (total > 0) {
+      setSellingPrice(total);
+      setOverrideBreakdown((prev) =>
+        prev.map((item, i) => ({
+          ...item,
+          percent: parseFloat((newAmounts[i] / total).toFixed(4)),
+        }))
+      );
+    }
+  }
+
   // Recalculate selling price when override changes
   function applyOverride() {
-    if (landingPrice > 0) {
+    if (overrideMode === "amount") {
+      const total = overrideAmounts.reduce((s, a) => s + a, 0);
+      if (total > 0) setSellingPrice(total);
+    } else if (landingPrice > 0) {
       const { sellingPrice: suggested } = calculateTransparentPricing(landingPrice, overrideBreakdown);
       setSellingPrice(suggested);
     }
@@ -296,45 +320,88 @@ function ProductForm({
             </label>
           </div>
 
-          {/* Editable override percentages */}
+          {/* Editable override */}
           {useOverride && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-              <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-3">
-                Custom Percentages
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">
+                  Custom Pricing
+                </p>
+                <div className="flex items-center gap-1 bg-white rounded-lg border border-amber-200 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setOverrideMode("percent")}
+                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors ${
+                      overrideMode === "percent" ? "bg-amber-600 text-white" : "text-amber-700"
+                    }`}
+                  >
+                    Percentage
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOverrideMode("amount")}
+                    className={`px-3 py-1 text-[10px] font-semibold rounded-md transition-colors ${
+                      overrideMode === "amount" ? "bg-amber-600 text-white" : "text-amber-700"
+                    }`}
+                  >
+                    Amount (₹)
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {overrideBreakdown.map((item, idx) => (
                   <div key={item.key}>
                     <label className="block text-[10px] text-[#6b7280] font-medium mb-1 truncate" title={item.label}>
                       {item.label}
                     </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={Math.round(item.percent * 100)}
-                        onChange={(e) => updateOverridePercent(idx, (parseInt(e.target.value) || 0) / 100)}
-                        min={0}
-                        max={100}
-                        className="w-full px-2 py-1.5 text-xs text-right border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 font-semibold"
-                      />
-                      <span className="text-xs text-[#6b7280]">%</span>
-                    </div>
+                    {overrideMode === "percent" ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={Math.round(item.percent * 100)}
+                          onChange={(e) => updateOverridePercent(idx, (parseInt(e.target.value) || 0) / 100)}
+                          min={0}
+                          max={100}
+                          className="w-full px-2 py-1.5 text-xs text-right border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 font-semibold"
+                        />
+                        <span className="text-xs text-[#6b7280]">%</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-[#6b7280]">₹</span>
+                        <input
+                          type="number"
+                          value={overrideAmounts[idx] || ""}
+                          onChange={(e) => updateOverrideAmount(idx, parseFloat(e.target.value) || 0)}
+                          min={0}
+                          className="w-full px-2 py-1.5 text-xs text-right border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 font-semibold"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
+
               <div className="flex items-center justify-between mt-3">
-                <span className={`text-xs font-semibold ${
-                  Math.abs(overrideBreakdown.reduce((s, b) => s + b.percent, 0) - 1) < 0.01
-                    ? "text-green-600" : "text-red-600"
-                }`}>
-                  Total: {Math.round(overrideBreakdown.reduce((s, b) => s + b.percent, 0) * 100)}%
-                </span>
+                {overrideMode === "percent" ? (
+                  <span className={`text-xs font-semibold ${
+                    Math.abs(overrideBreakdown.reduce((s, b) => s + b.percent, 0) - 1) < 0.01
+                      ? "text-green-600" : "text-red-600"
+                  }`}>
+                    Total: {Math.round(overrideBreakdown.reduce((s, b) => s + b.percent, 0) * 100)}%
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold text-amber-700">
+                    Total: ₹{overrideAmounts.reduce((s, a) => s + a, 0).toLocaleString("en-IN")}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={applyOverride}
                   className="text-xs font-semibold text-amber-700 hover:text-amber-900 transition-colors"
                 >
-                  Recalculate Price →
+                  Apply →
                 </button>
               </div>
             </div>

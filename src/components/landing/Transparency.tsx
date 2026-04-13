@@ -14,7 +14,15 @@ const lineItems = [
 
 const profit = { label: "Profit", percent: "10%", amount: "₹139" };
 
-export default function Transparency() {
+interface TransparencyContent {
+  badge?: string;
+  heading?: string;
+  headingHighlight?: string;
+  subtext?: string;
+  totalAmount?: string;
+}
+
+export default function Transparency({ content = {} as TransparencyContent }: { content?: TransparencyContent }) {
   return (
     <section className="bg-[#0a0a0a] py-24 px-4 overflow-hidden">
       <div className="max-w-5xl mx-auto">
@@ -28,13 +36,13 @@ export default function Transparency() {
         >
           <div className="inline-flex items-center gap-2 bg-[#16a34a]/10 border border-[#16a34a]/20 rounded-full px-4 py-2 mb-6">
             <Eye size={16} className="text-[#16a34a]" />
-            <span className="text-sm font-semibold text-[#16a34a]">Radical Transparency</span>
+            <span className="text-sm font-semibold text-[#16a34a]">{content.badge ?? "Radical Transparency"}</span>
           </div>
           <h2 className="font-serif text-4xl lg:text-5xl text-white mb-4">
-            We Show <span className="text-[#16a34a]">Everything</span>
+            {content.heading ?? "We Show"} <span className="text-[#16a34a]">{content.headingHighlight ?? "Everything"}</span>
           </h2>
           <p className="text-white/50 text-lg max-w-lg mx-auto">
-            Every quote breaks down exactly where your money goes. Even our profit.
+            {content.subtext ?? "Every quote breaks down exactly where your money goes. Even our profit."}
           </p>
         </motion.div>
 
@@ -134,7 +142,7 @@ export default function Transparency() {
                     <p className="text-[10px] text-white/70 uppercase tracking-widest font-semibold mb-1">
                       Total Selling Price
                     </p>
-                    <p className="text-4xl font-bold text-white">₹1399</p>
+                    <p className="text-4xl font-bold text-white">{content.totalAmount ?? "₹1399"}</p>
                   </motion.div>
 
                   {/* Transparent guarantee badge */}

@@ -9,6 +9,7 @@ import {
   Package,
   FileText,
   Truck,
+  Layout,
   Settings,
   ArrowLeft,
   Menu,
@@ -20,6 +21,7 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Quotes", href: "/admin/quotes", icon: FileText },
   { label: "Orders", href: "/admin/orders", icon: Truck },
+  { label: "CMS", href: "/admin/cms", icon: Layout },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_PRICING_BREAKDOWN } from "@/lib/constants";
 
@@ -20,7 +21,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { pricingBreakdown } = body;
+    const { pricingBreakdown, whatsappPhone, displayPhone } = body;
 
     if (!Array.isArray(pricingBreakdown) || pricingBreakdown.length === 0) {
       return NextResponse.json({ error: "Invalid pricing breakdown" }, { status: 400 });
@@ -34,10 +35,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const settingsData: Record<string, unknown> = { pricingBreakdown };
+    if (whatsappPhone) settingsData.whatsappPhone = whatsappPhone;
+    if (displayPhone) settingsData.displayPhone = displayPhone;
+
+    const jsonData = settingsData as Prisma.InputJsonValue;
+
     const settings = await prisma.settings.upsert({
       where: { id: "default" },
-      update: { data: { pricingBreakdown } },
-      create: { id: "default", data: { pricingBreakdown } },
+      update: { data: jsonData },
+      create: { id: "default", data: jsonData },
     });
 
     return NextResponse.json(settings.data);

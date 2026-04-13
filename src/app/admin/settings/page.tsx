@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Settings, Save, RotateCcw } from "lucide-react";
+import { Settings, Save, RotateCcw, Phone, MessageCircle } from "lucide-react";
 import { DEFAULT_PRICING_BREAKDOWN, PricingItem } from "@/lib/constants";
 
 export default function AdminSettingsPage() {
   const [breakdown, setBreakdown] = useState<PricingItem[]>(
     DEFAULT_PRICING_BREAKDOWN.map((b) => ({ ...b }))
   );
+  const [whatsappPhone, setWhatsappPhone] = useState("919999999999");
+  const [displayPhone, setDisplayPhone] = useState("+91 99999 99999");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -17,9 +19,9 @@ export default function AdminSettingsPage() {
       const res = await fetch("/api/settings");
       if (res.ok) {
         const data = await res.json();
-        if (data.pricingBreakdown) {
-          setBreakdown(data.pricingBreakdown);
-        }
+        if (data.pricingBreakdown) setBreakdown(data.pricingBreakdown);
+        if (data.whatsappPhone) setWhatsappPhone(data.whatsappPhone);
+        if (data.displayPhone) setDisplayPhone(data.displayPhone);
       }
     } catch (err) {
       if (process.env.NODE_ENV !== "production") console.error("Fetch settings error:", err);
@@ -49,7 +51,11 @@ export default function AdminSettingsPage() {
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pricingBreakdown: breakdown }),
+        body: JSON.stringify({
+          pricingBreakdown: breakdown,
+          whatsappPhone,
+          displayPhone,
+        }),
       });
       if (res.ok) {
         setMessage({ type: "success", text: "Pricing defaults saved successfully!" });
@@ -88,6 +94,45 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
+      {/* Contact Numbers */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-w-2xl mb-6">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-[#0a0a0a]">Contact Numbers</h2>
+          <p className="text-xs text-[#6b7280] mt-1">
+            WhatsApp and phone numbers used across the website and in quote messages.
+          </p>
+        </div>
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center gap-2 text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1.5">
+              <MessageCircle size={14} /> WhatsApp Number
+            </label>
+            <input
+              type="text"
+              value={whatsappPhone}
+              onChange={(e) => setWhatsappPhone(e.target.value.replace(/\D/g, ""))}
+              placeholder="919999999999"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4860b]/30 focus:border-[#d4860b]"
+            />
+            <p className="text-[10px] text-[#9ca3af] mt-1">Include country code, no + sign (e.g. 919876543210)</p>
+          </div>
+          <div>
+            <label className="flex items-center gap-2 text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1.5">
+              <Phone size={14} /> Display Phone
+            </label>
+            <input
+              type="text"
+              value={displayPhone}
+              onChange={(e) => setDisplayPhone(e.target.value)}
+              placeholder="+91 99999 99999"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d4860b]/30 focus:border-[#d4860b]"
+            />
+            <p className="text-[10px] text-[#9ca3af] mt-1">Formatted number shown to customers</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing Breakdown */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden max-w-2xl">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-[#0a0a0a]">Default Pricing Breakdown</h2>

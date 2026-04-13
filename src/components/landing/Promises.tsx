@@ -79,7 +79,20 @@ const promises = [
   },
 ];
 
-export default function Promises() {
+interface PromisesContent {
+  label?: string;
+  heading?: string;
+  items?: { value: string; title: string; desc: string }[];
+}
+
+export default function Promises({ content = {} as PromisesContent }: { content?: PromisesContent }) {
+  const cmsItems = content.items;
+  if (cmsItems && cmsItems.length === promises.length) {
+    for (let i = 0; i < promises.length; i++) {
+      promises[i].title = cmsItems[i].title;
+      promises[i].sub = cmsItems[i].desc;
+    }
+  }
   return (
     <section className="bg-[#f5f2ed] py-24 px-4">
       <div className="max-w-5xl mx-auto">
@@ -89,7 +102,7 @@ export default function Promises() {
           viewport={{ once: true }}
           className="text-center text-sm font-semibold text-[#d4860b] uppercase tracking-widest mb-4"
         >
-          Our Promises
+          {content.label ?? "Our Promises"}
         </motion.p>
 
         <motion.h2
@@ -99,7 +112,7 @@ export default function Promises() {
           transition={{ duration: 0.6 }}
           className="font-serif text-4xl lg:text-5xl text-[#0a0a0a] text-center mb-16"
         >
-          Numbers We Stand By
+          {content.heading ?? "Numbers We Stand By"}
         </motion.h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

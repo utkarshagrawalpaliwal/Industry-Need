@@ -4,7 +4,28 @@ import { motion } from "framer-motion";
 import { MessageCircle, Phone, ArrowDown } from "lucide-react";
 import { WHATSAPP_LINK, PHONE_LINK } from "@/lib/constants";
 
-export default function Hero() {
+interface HeroContent {
+  badge?: string;
+  heading?: string;
+  headingHighlight?: string;
+  points?: { text: string; color: string }[];
+  ctaPrimary?: string;
+  ctaSecondary?: string;
+}
+
+export default function Hero({ content = {} as HeroContent }: { content?: HeroContent }) {
+  const c = {
+    badge: content.badge ?? "Serving Delhi NCR",
+    heading: content.heading ?? "Order. Quote.",
+    headingHighlight: content.headingHighlight ?? "Delivered.",
+    points: content.points ?? [
+      { text: "WhatsApp / Call", color: "text-[#25D366]" },
+      { text: "Quote in 10 min", color: "text-[#d4860b]" },
+      { text: "Delivered in 2 hrs", color: "text-white" },
+    ],
+    ctaPrimary: content.ctaPrimary ?? "WhatsApp Us",
+    ctaSecondary: content.ctaSecondary ?? "Call Now",
+  };
   return (
     <section className="relative min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center overflow-hidden px-4">
       {/* Animated background rings */}
@@ -40,7 +61,7 @@ export default function Hero() {
           className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-5 py-2 mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-          <span className="text-sm font-medium text-white/80">Serving Delhi NCR</span>
+          <span className="text-sm font-medium text-white/80">{c.badge}</span>
         </motion.div>
 
         {/* Main heading — minimal */}
@@ -50,8 +71,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="font-serif text-5xl sm:text-6xl lg:text-8xl text-white leading-[1.05] mb-6"
         >
-          Order. Quote.{" "}
-          <span className="text-[#d4860b]">Delivered.</span>
+          {c.heading}{" "}
+          <span className="text-[#d4860b]">{c.headingHighlight}</span>
         </motion.h1>
 
         {/* Animated sub-points instead of paragraph */}
@@ -61,11 +82,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mb-10"
         >
-          {[
-            { text: "WhatsApp / Call", color: "text-[#25D366]" },
-            { text: "Quote in 10 min", color: "text-[#d4860b]" },
-            { text: "Delivered in 2 hrs", color: "text-white" },
-          ].map((item, i) => (
+          {c.points.map((item, i) => (
             <motion.div
               key={item.text}
               initial={{ opacity: 0, x: -20 }}
@@ -97,14 +114,14 @@ export default function Hero() {
             className="group relative inline-flex items-center justify-center gap-3 bg-[#25D366] text-white font-semibold px-8 py-4 rounded-2xl text-lg hover:bg-[#1fb858] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(37,211,102,0.3)]"
           >
             <MessageCircle size={22} />
-            WhatsApp Us
+            {c.ctaPrimary}
           </a>
           <a
             href={PHONE_LINK}
             className="inline-flex items-center justify-center gap-3 border-2 border-white/20 text-white font-semibold px-8 py-4 rounded-2xl text-lg hover:border-white/50 hover:bg-white/5 transition-all duration-300"
           >
             <Phone size={22} />
-            Call Now
+            {c.ctaSecondary}
           </a>
         </motion.div>
       </div>

@@ -34,7 +34,21 @@ const steps = [
   },
 ];
 
-export default function HowItWorks() {
+interface HowItWorksContent {
+  label?: string;
+  heading?: string;
+  steps?: { number: string; title: string; desc: string }[];
+}
+
+export default function HowItWorks({ content = {} as HowItWorksContent }: { content?: HowItWorksContent }) {
+  // Override step labels/subs from CMS if available
+  const cmsSteps = content.steps;
+  if (cmsSteps && cmsSteps.length === steps.length) {
+    for (let i = 0; i < steps.length; i++) {
+      steps[i].label = cmsSteps[i].title;
+      steps[i].sub = cmsSteps[i].desc;
+    }
+  }
   return (
     <section className="bg-[#f5f2ed] py-24 px-4 overflow-hidden">
       <div className="max-w-5xl mx-auto">
@@ -45,7 +59,7 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           className="text-center text-sm font-semibold text-[#d4860b] uppercase tracking-widest mb-4"
         >
-          How It Works
+          {content.label ?? "How It Works"}
         </motion.p>
 
         <motion.h2
@@ -55,7 +69,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.6 }}
           className="font-serif text-4xl lg:text-5xl text-[#0a0a0a] text-center mb-20"
         >
-          4 Steps. That&apos;s It.
+          {content.heading ?? "4 Steps. That's It."}
         </motion.h2>
 
         {/* Flowchart */}

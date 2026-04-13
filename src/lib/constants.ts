@@ -29,6 +29,42 @@ export const PAYMENT_BADGE_CLASSES: Record<string, string> = {
   refunded: "bg-red-100 text-red-700 border-red-200",
 };
 
+// ─── Transparent Pricing Model ───────────────────────────────────────────────
+// Defines how the selling price is composed. Each value is a fraction of total.
+// Must sum to 1.0. Aligned with the landing page Transparency section.
+
+export const PRICING_BREAKDOWN = [
+  { key: "landingPrice", label: "Cost of Goods (Landing Price)", percent: 0.42 },
+  { key: "employeeCost", label: "Employee Benefit Cost", percent: 0.12 },
+  { key: "rentalCost", label: "Rental & Interest Cost", percent: 0.08 },
+  { key: "labourCost", label: "Labour Charges", percent: 0.10 },
+  { key: "deliveryCost", label: "Delivery Charges", percent: 0.05 },
+  { key: "gst", label: "GST", percent: 0.13 },
+  { key: "profit", label: "Profit", percent: 0.10 },
+] as const;
+
+// Given a landing price, calculate the selling price and full breakdown
+export function calculateTransparentPricing(landingPrice: number) {
+  const costOfGoodsPercent = 0.42;
+  const sellingPrice = Math.round(landingPrice / costOfGoodsPercent);
+
+  return {
+    sellingPrice,
+    breakdown: PRICING_BREAKDOWN.map((item) => ({
+      ...item,
+      amount: Math.round(sellingPrice * item.percent),
+    })),
+  };
+}
+
+// Given a selling price, calculate the breakdown amounts
+export function getBreakdownFromSellingPrice(sellingPrice: number) {
+  return PRICING_BREAKDOWN.map((item) => ({
+    ...item,
+    amount: Math.round(sellingPrice * item.percent),
+  }));
+}
+
 export const QUOTE_STATUS_BADGE_CLASSES: Record<string, string> = {
   draft: "bg-gray-100 text-gray-600 border-gray-200",
   sent: "bg-blue-100 text-blue-700 border-blue-200",

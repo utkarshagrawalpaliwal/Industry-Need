@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
+  Package,
   FileText,
   Truck,
   ArrowLeft,
@@ -15,6 +16,7 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Products", href: "/admin/products", icon: Package },
   { label: "Quotes", href: "/admin/quotes", icon: FileText },
   { label: "Orders", href: "/admin/orders", icon: Truck },
 ];

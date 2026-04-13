@@ -23,6 +23,7 @@ model Product {
   brand          String
   sku            String      @unique
   description    String
+  landingPrice   Float       @default(0)
   mrp            Float
   sellingPrice   Float
   category       Category    @relation(fields: [categoryId], references: [id])
@@ -63,6 +64,7 @@ model QuoteItem {
   productName  String
   brand        String
   sku          String
+  landingPrice Float   @default(0)
   mrp          Float
   sellingPrice Float
   quantity     Int

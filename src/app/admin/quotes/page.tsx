@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { QUOTE_STATUSES, QuoteStatus } from "@/types";
-import { QUOTE_STATUS_BADGE_CLASSES, BUSINESS_PHONE } from "@/lib/constants";
+import { QUOTE_STATUS_BADGE_CLASSES, BUSINESS_PHONE, PRICING_BREAKDOWN, getBreakdownFromSellingPrice } from "@/lib/constants";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,7 @@ interface ProductResult {
   name: string;
   brand: string;
   sku: string;
+  landingPrice: number;
   mrp: number;
   sellingPrice: number;
 }
@@ -37,6 +38,7 @@ interface QuoteItemRow {
   productName: string;
   brand: string;
   sku: string;
+  landingPrice: number;
   mrp: number;
   sellingPrice: number;
   quantity: number;
@@ -48,6 +50,7 @@ interface QuoteItem {
   productName: string;
   brand: string;
   sku: string;
+  landingPrice: number;
   mrp: number;
   sellingPrice: number;
   quantity: number;
@@ -78,6 +81,7 @@ function emptyRow(): QuoteItemRow {
     productName: "",
     brand: "",
     sku: "",
+    landingPrice: 0,
     mrp: 0,
     sellingPrice: 0,
     quantity: 1,
@@ -108,12 +112,21 @@ function generateQuoteHTML(quote: Quote) {
           ${item.productName}<br/>
           <span style="color:#888;font-size:11px;">${item.brand} | SKU: ${item.sku}</span>
         </td>
-        <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:right;">₹${item.mrp.toFixed(2)}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:right;color:#16a34a;font-weight:600;">₹${item.sellingPrice.toFixed(2)}</td>
         <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:center;">${item.quantity}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:right;">₹${(item.sellingPrice * item.quantity).toFixed(2)}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:12px;text-align:right;color:#16a34a;">${Math.round(((item.mrp - item.sellingPrice) / item.mrp) * 100)}% off</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:13px;text-align:right;font-weight:600;">₹${(item.sellingPrice * item.quantity).toFixed(2)}</td>
       </tr>`
+    )
+    .join("");
+
+  // Transparent breakdown for the overall quote total
+  const breakdown = getBreakdownFromSellingPrice(quote.subtotal);
+  const breakdownRows = breakdown
+    .map(
+      (b) => `
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;${b.key === "profit" ? "color:#16a34a;font-weight:600;" : "color:#555;"}">
+        <span>${b.label} (${Math.round(b.percent * 100)}%)</span>
+        <span>₹${b.amount.toFixed(2)}</span>
+      </div>`
     )
     .join("");
 
@@ -148,33 +161,28 @@ function generateQuoteHTML(quote: Quote) {
       <tr style="background:#f5f2ed;">
         <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">#</th>
         <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Item</th>
-        <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">MRP</th>
-        <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Our Price</th>
         <th style="padding:10px 8px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Qty</th>
-        <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Total</th>
-        <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Savings</th>
+        <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#666;">Amount</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>
   </table>
 
-  <div style="display:flex;justify-content:flex-end;">
-    <div style="width:280px;">
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;">
-        <span>Subtotal</span><span>₹${quote.subtotal.toFixed(2)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#555;">
-        <span>GST (18%)</span><span>₹${quote.gst.toFixed(2)}</span>
-      </div>
-      <hr style="border:none;border-top:1px solid #ddd;margin:6px 0;"/>
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:16px;font-weight:700;color:#d4860b;">
-        <span>Grand Total</span><span>₹${quote.total.toFixed(2)}</span>
-      </div>
+  <!-- Transparent Pricing Breakdown -->
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:25px;">
+    <p style="font-size:11px;color:#16a34a;text-transform:uppercase;letter-spacing:2px;font-weight:700;margin:0 0 12px;">
+      ✅ Transparent Price Breakdown
+    </p>
+    ${breakdownRows}
+    <hr style="border:none;border-top:1px solid #bbf7d0;margin:8px 0;"/>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:16px;font-weight:700;color:#d4860b;">
+      <span>Total Selling Price</span><span>₹${quote.total.toFixed(2)}</span>
     </div>
   </div>
 
-  <hr style="border:none;border-top:1px solid #eee;margin:30px 0 15px;"/>
+  <hr style="border:none;border-top:1px solid #eee;margin:20px 0 15px;"/>
   <p style="font-size:12px;color:#888;">This quotation is valid for <strong>7 days</strong> from the date of issue.</p>
+  <p style="font-size:11px;color:#16a34a;font-weight:600;margin-top:8px;">🛡️ Transparent Guarantee — We show exactly where your money goes, including our profit.</p>
   <p style="text-align:center;font-size:11px;color:#999;margin-top:20px;">IndustryNeed — Delhi NCR | WhatsApp: +91 ${BUSINESS_PHONE.slice(-10, -5)} ${BUSINESS_PHONE.slice(-5)}</p>
 </body>
 </html>`;
@@ -198,7 +206,12 @@ function buildWhatsAppLink(quote: Quote): string {
     )
     .join("\n");
 
-  const message = `Hi ${quote.name}! Here's your quote from *IndustryNeed*:\n\n📋 Quote #: ${quote.quoteNumber}\n\n${itemLines}\n\nSubtotal: ${formatCurrency(quote.subtotal)}\nGST (18%): ${formatCurrency(quote.gst)}\n*Total: ${formatCurrency(quote.total)}*\n\n✅ This quote is valid for 7 days.\nReply *YES* to confirm your order!`;
+  const breakdown = getBreakdownFromSellingPrice(quote.subtotal);
+  const breakdownLines = breakdown
+    .map((b) => `  ${b.label}: ${formatCurrency(b.amount)}`)
+    .join("\n");
+
+  const message = `Hi ${quote.name}! Here's your quote from *IndustryNeed*:\n\n📋 *Quote #: ${quote.quoteNumber}*\n\n${itemLines}\n\n💰 *Transparent Price Breakdown:*\n${breakdownLines}\n\n*Total: ${formatCurrency(quote.total)}*\n\n🛡️ We show exactly where your money goes — including our profit.\n✅ This quote is valid for 7 days.\nReply *YES* to confirm your order!`;
 
   return `https://wa.me/91${quote.phone}?text=${encodeURIComponent(message)}`;
 }
@@ -316,6 +329,7 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
               productName: product.name,
               brand: product.brand,
               sku: product.sku,
+              landingPrice: product.landingPrice,
               mrp: product.mrp,
               sellingPrice: product.sellingPrice,
             }
@@ -373,6 +387,7 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
             productName: i.productName,
             brand: i.brand,
             sku: i.sku,
+            landingPrice: i.landingPrice,
             mrp: i.mrp,
             sellingPrice: i.sellingPrice,
             quantity: i.quantity,
@@ -585,28 +600,31 @@ function QuoteForm({ onCreated }: { onCreated: () => void }) {
         )}
 
         {/* Pricing Summary + Actions */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-4 border-t border-gray-100">
-          {/* Totals */}
-          <div className="w-full sm:w-64 space-y-1.5">
-            <div className="flex justify-between text-sm text-[#6b7280]">
-              <span>Subtotal</span>
-              <span>{formatCurrency(subtotal)}</span>
-            </div>
-            {totalSavings > 0 && (
-              <div className="flex justify-between text-sm text-green-600 font-medium">
-                <span>Total Savings</span>
-                <span>-{formatCurrency(totalSavings)}</span>
+        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 pt-4 border-t border-gray-100">
+          {/* Transparent Breakdown */}
+          {subtotal > 0 && (
+            <div className="w-full lg:w-80 bg-green-50 border border-green-200 rounded-xl p-4">
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-2">
+                Transparent Breakdown
+              </p>
+              <div className="space-y-1.5">
+                {getBreakdownFromSellingPrice(subtotal).map((b) => (
+                  <div key={b.key} className="flex justify-between text-xs">
+                    <span className="text-[#374151]">
+                      {b.label} ({Math.round(b.percent * 100)}%)
+                    </span>
+                    <span className={`font-semibold ${b.key === "profit" ? "text-green-600" : "text-[#0a0a0a]"}`}>
+                      {formatCurrency(b.amount)}
+                    </span>
+                  </div>
+                ))}
+                <div className="border-t border-green-200 pt-1.5 flex justify-between text-lg font-bold text-[#d4860b]">
+                  <span>Total</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
               </div>
-            )}
-            <div className="flex justify-between text-sm text-[#6b7280]">
-              <span>GST (18%)</span>
-              <span>{formatCurrency(gst)}</span>
             </div>
-            <div className="border-t border-gray-200 pt-1.5 flex justify-between text-lg font-bold text-[#d4860b]">
-              <span>Total</span>
-              <span>{formatCurrency(total)}</span>
-            </div>
-          </div>
+          )}
 
           {/* Save Button */}
           <button
@@ -829,11 +847,9 @@ function QuoteList({
                       <thead>
                         <tr className="text-left text-xs text-[#9ca3af] uppercase tracking-wider bg-gray-50">
                           <th className="px-4 py-2.5">Product</th>
-                          <th className="px-4 py-2.5 text-right">MRP</th>
-                          <th className="px-4 py-2.5 text-right">Our Price</th>
                           <th className="px-4 py-2.5 text-center">Qty</th>
+                          <th className="px-4 py-2.5 text-right">Unit Price</th>
                           <th className="px-4 py-2.5 text-right">Total</th>
-                          <th className="px-4 py-2.5 text-right">Savings</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -845,44 +861,41 @@ function QuoteList({
                                 {item.brand} &middot; SKU: {item.sku}
                               </p>
                             </td>
-                            <td className="px-4 py-2.5 text-right text-[#6b7280] line-through text-xs">
-                              {formatCurrency(item.mrp)}
-                            </td>
+                            <td className="px-4 py-2.5 text-center">{item.quantity}</td>
                             <td className="px-4 py-2.5 text-right font-semibold text-green-700">
                               {formatCurrency(item.sellingPrice)}
                             </td>
-                            <td className="px-4 py-2.5 text-center">{item.quantity}</td>
                             <td className="px-4 py-2.5 text-right font-semibold">
                               {formatCurrency(item.sellingPrice * item.quantity)}
-                            </td>
-                            <td className="px-4 py-2.5 text-right text-green-600 text-xs font-semibold">
-                              {item.mrp > item.sellingPrice
-                                ? `${Math.round(((item.mrp - item.sellingPrice) / item.mrp) * 100)}% off`
-                                : "—"}
                             </td>
                           </tr>
                         ))}
                       </tbody>
-                      <tfoot className="border-t border-gray-200">
-                        <tr className="text-xs text-[#6b7280]">
-                          <td colSpan={4} className="px-4 py-1.5 text-right">Subtotal</td>
-                          <td className="px-4 py-1.5 text-right">{formatCurrency(quote.subtotal)}</td>
-                          <td />
-                        </tr>
-                        <tr className="text-xs text-[#6b7280]">
-                          <td colSpan={4} className="px-4 py-1.5 text-right">GST (18%)</td>
-                          <td className="px-4 py-1.5 text-right">{formatCurrency(quote.gst)}</td>
-                          <td />
-                        </tr>
-                        <tr className="font-bold text-[#0a0a0a]">
-                          <td colSpan={4} className="px-4 py-2 text-right">Total</td>
-                          <td className="px-4 py-2 text-right text-[#d4860b]">
-                            {formatCurrency(quote.total)}
-                          </td>
-                          <td />
-                        </tr>
-                      </tfoot>
                     </table>
+                  </div>
+
+                  {/* Transparent Pricing Breakdown */}
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-4">
+                    <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-3">
+                      Transparent Price Breakdown
+                    </p>
+                    <div className="space-y-2">
+                      {getBreakdownFromSellingPrice(quote.subtotal).map((b) => (
+                        <div key={b.key} className="flex justify-between text-sm">
+                          <span className="text-[#374151]">
+                            {b.label}{" "}
+                            <span className="text-[#9ca3af]">({Math.round(b.percent * 100)}%)</span>
+                          </span>
+                          <span className={`font-semibold ${b.key === "profit" ? "text-green-600" : "text-[#0a0a0a]"}`}>
+                            {formatCurrency(b.amount)}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="border-t border-green-200 pt-2 flex justify-between text-base font-bold text-[#d4860b]">
+                        <span>Total</span>
+                        <span>{formatCurrency(quote.total)}</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Actions */}

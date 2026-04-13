@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         name: true,
         brand: true,
         sku: true,
+        landingPrice: true,
         mrp: true,
         sellingPrice: true,
       },
